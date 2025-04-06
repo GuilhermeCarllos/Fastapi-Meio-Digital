@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema Meio Digital{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/projetofinal22/app/static/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+<body>
+    <!-- Navegação -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/" style="color: #0069d9;">MEIO DIGITAL</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/curso">Cursos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/estudante">Alunos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/professor">Professores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/enrollments">Matrículas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/api/report/report">Relatórios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="logout()">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Cabeçalho -->
+    <header class="bg-primary text-white text-center py-4">
+        <h4 class="fs-5 mb-2 subtle-text">Seja bem-vindo</h4>
+        <h1 class="display-3 highlight-text mb-2">SISTEMA MEIO DIGITAL</h1>
+        <h5 class="fs-6 subtle-text">Gerenciamento Administrativo</h5>
+    </header>
+
+    <!-- Conteúdo -->
+    <div class="container mt-5">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="footer py-3" style="background-color: #0069d9;">
+        <div class="container">
+            <div class="row align-items-center">
+                <!-- Contato (esquerda) -->
+                <div class="col-md-4 text-center text-md-start">
+                    <p class="mb-1 small"><i class="bi bi-geo-alt me-2" style="color: #ffffff;"></i>Rua Central, 123, Madalena-CE</p>
+                    <p class="mb-0 small"><i class="bi bi-envelope me-2" style="color: #ffffff;"></i>contato@meiodigital.com</p>
+                </div>
+                <!-- Logo "MD" (centro) -->
+                <div class="col-md-4 text-center">
+                    <h1 class="display-3 fw-bold mb-0" style="color: #ffffff; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);">MD</h1>
+                    <p class="small mb-0 opacity-75">Sistema Meio Digital</p>
+                </div>
+                <!-- Redes Sociais (direita) -->
+                <div class="col-md-4 text-center text-md-end">
+                    <div class="d-flex justify-content-center justify-content-md-end gap-2">
+                        <a href="https://facebook.com/meiodigital" target="_blank" class="text-white hover-effect"><i class="bi bi-facebook fs-5"></i></a>
+                        <a href="https://instagram.com/meiodigital" target="_blank" class="text-white hover-effect"><i class="bi bi-instagram fs-5"></i></a>
+                        <a href="https://twitter.com/meiodigital" target="_blank" class="text-white hover-effect"><i class="bi bi-twitter fs-5"></i></a>
+                        <a href="https://linkedin.com/company/meiodigital" target="_blank" class="text-white hover-effect"><i class="bi bi-linkedin fs-5"></i></a>
+                        <a href="https://youtube.com/meiodigital" target="_blank" class="text-white hover-effect"><i class="bi bi-youtube fs-5"></i></a>
+                    </div>
+                    <p class="small mt-1 mb-0 opacity-75">© 2025 Meio Digital</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="/static/js/script.js"></script>
+    <script>
+        function checkAuth() {
+            const token = localStorage.getItem("access_token");
+            const protectedRoutes = ["/curso", "/estudante", "/professor", "/enrollments", "/api/report/report"];
+            const currentPath = window.location.pathname;
+
+            if (protectedRoutes.includes(currentPath) && !token) {
+                console.log("Nenhum token encontrado, redirecionando para /api/auth/login");
+                window.location.href = "/api/auth/login";
+                return false;
+            }
+            return true;
+        }
+
+        function logout() {
+            localStorage.removeItem("access_token");
+            window.location.href = "/api/auth/login";
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            checkAuth();
+
+            // Intercepta cliques nos links da navbar
+            document.querySelectorAll(".nav-link").forEach(link => {
+                link.addEventListener("click", async function (event) {
+                    const href = this.getAttribute("href");
+                    if (href === "#" || href === "/api/auth/register" || href === "/api/auth/login") return;
+
+                    event.preventDefault();
+                    const token = localStorage.getItem("access_token");
+                    if (!token) {
+                        window.location.href = "/api/auth/login";
+                        return;
+                    }
+
+                    // Carrega o conteúdo da página dinamicamente
+                    try {
+                        const response = await fetch(href, {
+                            method: "GET",
+                            headers: {
+                                "Authorization": `Bearer ${token}`,
+                                "Accept": "text/html"
+                            }
+                        });
+
+                        if (response.ok) {
+                            const html = await response.text();
+                            document.open();
+                            document.write(html);
+                            document.close();
+                            history.pushState({}, "", href); // Atualiza a URL sem recarregar
+                        } else if (response.status === 401) {
+                            localStorage.removeItem("access_token");
+                            window.location.href = "/api/auth/login";
+                        } else {
+                            console.error("Erro ao acessar a rota:", response.status);
+                        }
+                    } catch (error) {
+                        console.error("Erro na requisição:", error);
+                        window.location.href = "/api/auth/login";
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

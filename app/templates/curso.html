@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% block title %}Cursos - Sistema Meio Digital{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="modal-title mb-0">Cursos</h2>
+            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addCursoModal">
+                <i class="bi bi-plus-circle me-1"></i> Adicionar Curso
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="success-message" class="alert alert-success alert-dismissible fade d-none" role="alert">
+                <span id="success-text"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div id="error-message" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+                <span id="error-text"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <table class="table table-hover" id="curso-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Curso</th>
+                        <th>Semestre</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="curso-tbody">
+                    {% for curso in cursos %}
+                    <tr data-id="{{ curso.id }}">
+                        <td>{{ curso.id }}</td>
+                        <td>{{ curso.name }}</td>
+                        <td>{{ curso.description }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary edit-curso-btn me-1" data-bs-toggle="modal" data-bs-target="#editCursoModal" data-id="{{ curso.id }}">
+                                <i class="bi bi-pencil-square me-1"></i>Editar
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-curso-btn" data-id="{{ curso.id }}">
+                                <i class="bi bi-trash me-1"></i>Excluir
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-muted">Nenhum curso cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar curso -->
+    <div class="modal fade" id="addCursoModal" tabindex="-1" aria-labelledby="addCursoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCursoModalLabel">Adicionar Novo Curso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-curso-form">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nome do Curso</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Digite o nome do curso" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="description" name="description" placeholder="Digite a descrição do curso" required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Adicionar Curso</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar curso -->
+    <div class="modal fade" id="editCursoModal" tabindex="-1" aria-labelledby="editCursoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCursoModalLabel">Editar Curso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-curso-form">
+                        <input type="hidden" id="edit-curso-id" name="id">
+                        <div class="mb-3">
+                            <label for="edit-curso-name" class="form-label">Nome do Curso</label>
+                            <input type="text" class="form-control" id="edit-curso-name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-curso-description" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="edit-curso-description" name="description" required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Função para inicializar eventos
+    function initializeEvents() {
+        const editButtons = document.querySelectorAll(".edit-curso-btn");
+        const deleteButtons = document.querySelectorAll(".delete-curso-btn");
+        const addForm = document.getElementById("add-curso-form");
+        const editForm = document.getElementById("edit-curso-form");
+
+        // Limpar e adicionar eventos para "Editar"
+        editButtons.forEach(button => {
+            button.removeEventListener("click", handleEditClick);
+            button.addEventListener("click", handleEditClick);
+        });
+
+        // Limpar e adicionar eventos para "Excluir"
+        deleteButtons.forEach(button => {
+            button.removeEventListener("click", handleDeleteClick);
+            button.addEventListener("click", handleDeleteClick);
+        });
+
+        // Evento para adicionar curso
+        if (addForm) {
+            addForm.removeEventListener("submit", handleAddFormSubmit);
+            addForm.addEventListener("submit", handleAddFormSubmit);
+        }
+
+        // Evento para editar curso
+        if (editForm) {
+            editForm.removeEventListener("submit", handleEditFormSubmit);
+            editForm.addEventListener("submit", handleEditFormSubmit);
+        }
+    }
+
+    // Handler para abrir o modal de edição
+    function handleEditClick() {
+        const id = this.getAttribute("data-id");
+        const row = document.querySelector(`#curso-tbody tr[data-id="${id}"]`);
+        document.getElementById("edit-curso-id").value = id;
+        document.getElementById("edit-curso-name").value = row.children[1].textContent;
+        document.getElementById("edit-curso-description").value = row.children[2].textContent;
+    }
+
+    // Handler para adicionar curso
+    async function handleAddFormSubmit(event) {
+        event.preventDefault();
+
+        const successMessage = document.getElementById("success-message");
+        const errorMessage = document.getElementById("error-message");
+        successMessage.classList.add("d-none");
+        errorMessage.classList.add("d-none");
+
+        const formData = new FormData(this);
+        const data = {
+            name: formData.get("name"),
+            description: formData.get("description")
+        };
+
+        try {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                throw new Error("Você precisa estar logado para adicionar um curso.");
+            }
+
+            const response = await fetch("/api/curso/create-json", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Erro ao adicionar curso");
+            }
+
+            const newCurso = await response.json();
+            const tbody = document.getElementById("curso-tbody");
+            const newRow = document.createElement("tr");
+            newRow.setAttribute("data-id", newCurso.id);
+            newRow.innerHTML = `
+                <td>${newCurso.id}</td>
+                <td>${newCurso.name}</td>
+                <td>${newCurso.description}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary edit-curso-btn me-1" data-bs-toggle="modal" data-bs-target="#editCursoModal" data-id="${newCurso.id}">
+                        <i class="bi bi-pencil-square me-1"></i>Editar
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-curso-btn" data-id="${newCurso.id}">
+                        <i class="bi bi-trash me-1"></i>Excluir
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+
+            successMessage.querySelector("#success-text").textContent = "Curso adicionado com sucesso!";
+            successMessage.classList.remove("d-none");
+            successMessage.classList.add("show");
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("addCursoModal"));
+            modal.hide();
+            this.reset();
+
+            // Reaplicar eventos aos novos botões
+            initializeEvents();
+        } catch (error) {
+            errorMessage.querySelector("#error-text").textContent = error.message;
+            errorMessage.classList.remove("d-none");
+            errorMessage.classList.add("show");
+        }
+    }
+
+    // Handler para editar curso
+    async function handleEditFormSubmit(event) {
+        event.preventDefault();
+
+        const successMessage = document.getElementById("success-message");
+        const errorMessage = document.getElementById("error-message");
+        successMessage.classList.add("d-none");
+        errorMessage.classList.add("d-none");
+
+        const formData = new FormData(this);
+        const data = {
+            id: parseInt(formData.get("id")),
+            name: formData.get("name"),
+            description: formData.get("description")
+        };
+
+        try {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                throw new Error("Você precisa estar logado para editar um curso.");
+            }
+
+            const response = await fetch(`/api/curso/${data.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Erro ao editar curso");
+            }
+
+            const updatedCurso = await response.json();
+            const row = document.querySelector(`#curso-tbody tr[data-id="${updatedCurso.id}"]`);
+            row.children[1].textContent = updatedCurso.name;
+            row.children[2].textContent = updatedCurso.description;
+
+            successMessage.querySelector("#success-text").textContent = "Curso editado com sucesso!";
+            successMessage.classList.remove("d-none");
+            successMessage.classList.add("show");
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("editCursoModal"));
+            modal.hide();
+        } catch (error) {
+            errorMessage.querySelector("#error-text").textContent = error.message;
+            errorMessage.classList.remove("d-none");
+            errorMessage.classList.add("show");
+        }
+    }
+
+    // Handler para excluir curso
+    async function handleDeleteClick() {
+        const id = this.getAttribute("data-id");
+        if (!confirm("Tem certeza que deseja excluir este curso?")) return;
+
+        const successMessage = document.getElementById("success-message");
+        const errorMessage = document.getElementById("error-message");
+        successMessage.classList.add("d-none");
+        errorMessage.classList.add("d-none");
+
+        try {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                throw new Error("Você precisa estar logado para excluir um curso.");
+            }
+
+            const response = await fetch(`/api/curso/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Erro ao excluir curso");
+            }
+
+            document.querySelector(`#curso-tbody tr[data-id="${id}"]`).remove();
+            successMessage.querySelector("#success-text").textContent = "Curso excluído com sucesso!";
+            successMessage.classList.remove("d-none");
+            successMessage.classList.add("show");
+        } catch (error) {
+            errorMessage.querySelector("#error-text").textContent = error.message;
+            errorMessage.classList.remove("d-none");
+            errorMessage.classList.add("show");
+        }
+    }
+
+    // Inicializar eventos ao carregar a página
+    initializeEvents();
+});
+</script>
+<br>
+{% endblock %}

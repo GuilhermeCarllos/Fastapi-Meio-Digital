@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Matrículas - Sistema Meio Digital{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="modal-title mb-0">Matrículas</h2>
+            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addEnrollmentModal">
+                <i class="bi bi-plus-circle me-1"></i> Adicionar Matrícula
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="success-message" class="alert alert-success alert-dismissible fade d-none" role="alert">
+                <span id="success-text"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div id="error-message" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+                <span id="error-text"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <table class="table table-hover" id="enrollment-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Estudante</th>
+                        <th>Curso</th>
+                    </tr>
+                </thead>
+                <tbody id="enrollment-tbody">
+                    {% for enrollment in enrollments %}
+                    <tr>
+                        <td>{{ enrollment.id }}</td>
+                        <td>{{ enrollment.estudante.name }}</td>
+                        <td>{{ enrollment.curso.name }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-muted">Nenhuma matrícula cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar matrícula -->
+    <div class="modal fade" id="addEnrollmentModal" tabindex="-1" aria-labelledby="addEnrollmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEnrollmentModalLabel">Adicionar Nova Matrícula</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-enrollment-form">
+                        <div class="mb-3">
+                            <label for="estudante_id" class="form-label">Estudante</label>
+                            <select class="form-select" id="estudante_id" name="estudante_id" required>
+                                <option value="">Selecione um estudante</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="curso_id" class="form-label">Curso</label>
+                            <select class="form-select" id="curso_id" name="curso_id" required>
+                                <option value="">Selecione um curso</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Adicionar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    loadEstudantes();
+    loadCursos();
+
+    document.getElementById("add-enrollment-form").addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const successMessage = document.getElementById("success-message");
+        const errorMessage = document.getElementById("error-message");
+        successMessage.classList.add("d-none");
+        errorMessage.classList.add("d-none");
+
+        const formData = new FormData(this);
+        const data = {
+            estudante_id: parseInt(formData.get("estudante_id")),
+            curso_id: parseInt(formData.get("curso_id"))
+        };
+
+        // Validação extra no frontend
+        const estudanteSelect = document.getElementById("estudante_id");
+        const cursoSelect = document.getElementById("curso_id");
+        const estudanteValid = Array.from(estudanteSelect.options).some(opt => opt.value === data.estudante_id.toString() && !opt.disabled);
+        const cursoValid = Array.from(cursoSelect.options).some(opt => opt.value === data.curso_id.toString() && !opt.disabled);
+        if (!estudanteValid) throw new Error("Estudante selecionado é inválido");
+        if (!cursoValid) throw new Error("Curso selecionado é inválido");
+
+        try {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                throw new Error("Você precisa estar logado para adicionar uma matrícula.");
+            }
+
+            const response = await fetch("/api/enrollments/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Erro ao adicionar matrícula");
+            }
+
+            const newEnrollment = await response.json();
+            const tbody = document.getElementById("enrollment-tbody");
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td>${newEnrollment.id}</td>
+                <td>${newEnrollment.estudante.name}</td>
+                <td>${newEnrollment.curso.name}</td>
+            `;
+            tbody.appendChild(newRow);
+
+            const successText = document.getElementById("success-text");
+            successText.textContent = "Matrícula adicionada com sucesso!";
+            successMessage.classList.remove("d-none");
+            successMessage.classList.add("show");
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("addEnrollmentModal"));
+            modal.hide();
+            this.reset();
+            loadEstudantes();
+            loadCursos();
+        } catch (error) {
+            const errorText = document.getElementById("error-text");
+            errorText.textContent = error.message;
+            errorMessage.classList.remove("d-none");
+            errorMessage.classList.add("show");
+        }
+    });
+});
+
+async function loadEstudantes() {
+    try {
+        const response = await fetch("/api/estudante/", {
+            headers: { "Authorization": `Bearer ${localStorage.getItem("access_token")}` }
+        });
+        if (!response.ok) throw new Error("Erro ao carregar estudantes");
+        const estudantes = await response.json();
+        console.log("Estudantes carregados:", estudantes); // Log para depuração
+        const select = document.getElementById("estudante_id");
+        select.innerHTML = '<option value="">Selecione um estudante</option>';
+        if (estudantes.length === 0) {
+            select.innerHTML += '<option value="" disabled>Nenhum estudante disponível</option>';
+        } else {
+            estudantes.forEach(estudante => {
+                const option = document.createElement("option");
+                option.value = estudante.id;
+                option.textContent = estudante.name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error("Erro ao carregar estudantes:", error);
+        const select = document.getElementById("estudante_id");
+        select.innerHTML = '<option value="" disabled>Erro ao carregar estudantes</option>';
+    }
+}
+
+async function loadCursos() {
+    try {
+        const response = await fetch("/api/curso/", {
+            headers: { "Authorization": `Bearer ${localStorage.getItem("access_token")}` }
+        });
+        if (!response.ok) throw new Error("Erro ao carregar cursos");
+        const cursos = await response.json();
+        console.log("Cursos carregados:", cursos); // Log para depuração
+        const select = document.getElementById("curso_id");
+        select.innerHTML = '<option value="">Selecione um curso</option>';
+        if (cursos.length === 0) {
+            select.innerHTML += '<option value="" disabled>Nenhum curso disponível</option>';
+        } else {
+            cursos.forEach(curso => {
+                const option = document.createElement("option");
+                option.value = curso.id;
+                option.textContent = curso.name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error("Erro ao carregar cursos:", error);
+        const select = document.getElementById("curso_id");
+        select.innerHTML = '<option value="" disabled>Erro ao carregar cursos</option>';
+    }
+}
+</script>
+<br>
+{% endblock %}

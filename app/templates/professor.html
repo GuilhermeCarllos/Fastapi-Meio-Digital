@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block title %}Professores - Sistema Meio Digital{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="modal-title mb-0">Professores</h2>
+            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addProfessorModal">
+                <i class="bi bi-plus-circle me-1"></i> Adicionar Professor
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="success-message" class="alert alert-success alert-dismissible fade d-none" role="alert">
+                <span id="success-text"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div id="error-message" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+                <span id="error-text"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <table class="table table-hover" id="professor-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="professor-tbody">
+                    {% for professor in professores %}
+                    <tr data-id="{{ professor.id }}">
+                        <td>{{ professor.id }}</td>
+                        <td>{{ professor.name }}</td>
+                        <td>{{ professor.email }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary edit-professor-btn me-1" data-bs-toggle="modal" data-bs-target="#editProfessorModal" data-id="{{ professor.id }}">
+                                <i class="bi bi-pencil-square me-1"></i>Editar
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-professor-btn" data-id="{{ professor.id }}">
+                                <i class="bi bi-trash me-1"></i>Excluir
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-muted">Nenhum professor cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar professor -->
+    <div class="modal fade" id="addProfessorModal" tabindex="-1" aria-labelledby="addProfessorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProfessorModalLabel">Adicionar Novo Professor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-professor-form">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nome do Professor</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Digite o nome do professor" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Digite o e-mail do professor" required>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Adicionar Professor</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar professor -->
+    <div class="modal fade" id="editProfessorModal" tabindex="-1" aria-labelledby="editProfessorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfessorModalLabel">Editar Professor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-professor-form">
+                        <input type="hidden" id="edit-professor-id" name="id">
+                        <div class="mb-3">
+                            <label for="edit-professor-name" class="form-label">Nome do Professor</label>
+                            <input type="text" class="form-control" id="edit-professor-name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-professor-email" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="edit-professor-email" name="email" required>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Função para inicializar eventos
+    function initializeEvents() {
+        const editButtons = document.querySelectorAll(".edit-professor-btn");
+        const deleteButtons = document.querySelectorAll(".delete-professor-btn");
+        const addForm = document.getElementById("add-professor-form");
+        const editForm = document.getElementById("edit-professor-form");
+
+        editButtons.forEach(button => {
+            button.removeEventListener("click", handleEditClick);
+            button.addEventListener("click", handleEditClick);
+        });
+
+        deleteButtons.forEach(button => {
+            button.removeEventListener("click", handleDeleteClick);
+            button.addEventListener("click", handleDeleteClick);
+        });
+
+        if (addForm) {
+            addForm.removeEventListener("submit", handleAddFormSubmit);
+            addForm.addEventListener("submit", handleAddFormSubmit);
+        }
+
+        if (editForm) {
+            editForm.removeEventListener("submit", handleEditFormSubmit);
+            editForm.addEventListener("submit", handleEditFormSubmit);
+        }
+    }
+
+    // Handler para abrir o modal de edição
+    function handleEditClick() {
+        const id = this.getAttribute("data-id");
+        const row = document.querySelector(`#professor-tbody tr[data-id="${id}"]`);
+        document.getElementById("edit-professor-id").value = id;
+        document.getElementById("edit-professor-name").value = row.children[1].textContent;
+        document.getElementById("edit-professor-email").value = row.children[2].textContent;
+        console.log("Abrindo modal para professor ID:", id);
+    }
+
+    // Handler para adicionar professor
+    async function handleAddFormSubmit(event) {
+        event.preventDefault();
+        console.log("Tentando adicionar professor...");
+
+        const successMessage = document.getElementById("success-message");
+        const errorMessage = document.getElementById("error-message");
+        successMessage.classList.add("d-none");
+        errorMessage.classList.add("d-none");
+
+        const formData = new FormData(this);
+        const data = {
+            name: formData.get("name"),
+            email: formData.get("email")
+        };
+
+        try {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                throw new Error("Você precisa estar logado para adicionar um professor.");
+            }
+
+            console.log("Enviando POST para /api/professor/create-json", data);
+            const response = await fetch("/api/professor/create-json", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Erro ao adicionar professor");
+            }
+
+            const newProfessor = await response.json();
+            const tbody = document.getElementById("professor-tbody");
+            const newRow = document.createElement("tr");
+            newRow.setAttribute("data-id", newProfessor.id);
+            newRow.innerHTML = `
+                <td>${newProfessor.id}</td>
+                <td>${newProfessor.name}</td>
+                <td>${newProfessor.email}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary edit-professor-btn me-1" data-bs-toggle="modal" data-bs-target="#editProfessorModal" data-id="${newProfessor.id}">
+                        <i class="bi bi-pencil-square me-1"></i>Editar
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-professor-btn" data-id="${newProfessor.id}">
+                        <i class="bi bi-trash me-1"></i>Excluir
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+
+            successMessage.querySelector("#success-text").textContent = "Professor adicionado com sucesso!";
+            successMessage.classList.remove("d-none");
+            successMessage.classList.add("show");
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("addProfessorModal"));
+            modal.hide();
+            this.reset();
+
+            initializeEvents();
+        } catch (error) {
+            console.error("Erro ao adicionar professor:", error);
+            errorMessage.querySelector("#error-text").textContent = error.message;
+            errorMessage.classList.remove("d-none");
+            errorMessage.classList.add("show");
+        }
+    }
+
+    // Handler para editar professor
+    async function handleEditFormSubmit(event) {
+        event.preventDefault();
+        console.log("Tentando editar professor...");
+
+        const successMessage = document.getElementById("success-message");
+        const errorMessage = document.getElementById("error-message");
+        successMessage.classList.add("d-none");
+        errorMessage.classList.add("d-none");
+
+        const formData = new FormData(this);
+        const data = {
+            name: formData.get("name"),
+            email: formData.get("email")
+        };
+        const id = parseInt(formData.get("id"));
+
+        try {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                throw new Error("Você precisa estar logado para editar um professor.");
+            }
+
+            console.log("Enviando PUT para /api/professor/professor/" + id, data);
+            const response = await fetch(`/api/professor/professor/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Erro ao editar professor");
+            }
+
+            const updatedProfessor = await response.json();
+            const row = document.querySelector(`#professor-tbody tr[data-id="${updatedProfessor.id}"]`);
+            row.children[1].textContent = updatedProfessor.name;
+            row.children[2].textContent = updatedProfessor.email;
+
+            successMessage.querySelector("#success-text").textContent = "Professor editado com sucesso!";
+            successMessage.classList.remove("d-none");
+            successMessage.classList.add("show");
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("editProfessorModal"));
+            modal.hide();
+        } catch (error) {
+            console.error("Erro ao atualizar professor:", error);
+            errorMessage.querySelector("#error-text").textContent = error.message;
+            errorMessage.classList.remove("d-none");
+            errorMessage.classList.add("show");
+        }
+    }
+
+    // Handler para excluir professor
+    async function handleDeleteClick() {
+        const id = this.getAttribute("data-id");
+        if (!confirm("Tem certeza que deseja excluir este professor?")) return;
+        console.log("Tentando excluir professor ID:", id);
+
+        const successMessage = document.getElementById("success-message");
+        const errorMessage = document.getElementById("error-message");
+        successMessage.classList.add("d-none");
+        errorMessage.classList.add("d-none");
+
+        try {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                throw new Error("Você precisa estar logado para excluir um professor.");
+            }
+
+            console.log("Enviando DELETE para /api/professor/professor/" + id);
+            const response = await fetch(`/api/professor/professor/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Erro ao excluir professor");
+            }
+
+            document.querySelector(`#professor-tbody tr[data-id="${id}"]`).remove();
+            successMessage.querySelector("#success-text").textContent = "Professor excluído com sucesso!";
+            successMessage.classList.remove("d-none");
+            successMessage.classList.add("show");
+        } catch (error) {
+            console.error("Erro ao excluir professor:", error);
+            errorMessage.querySelector("#error-text").textContent = error.message;
+            errorMessage.classList.remove("d-none");
+            errorMessage.classList.add("show");
+        }
+    }
+
+    // Inicializar eventos ao carregar a página
+    initializeEvents();
+});
+</script>
+<br>
+{% endblock %}

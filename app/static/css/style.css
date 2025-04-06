@@ -1,0 +1,255 @@
+/* Estilo geral do corpo */
+body {
+    background-color: #f4f7fa;
+    font-family: 'Arial', sans-serif;
+    margin: 0; /* Garante que não haja margens indesejadas */
+}
+
+/* Navbar */
+.navbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.navbar-brand {
+    color: white !important;
+}
+
+.nav-link {
+    color: #6c757d;
+    transition: color 0.3s;
+}
+
+.nav-link:hover {
+    color: white;
+}
+
+/* Carrossel */
+.custom-carousel {
+    max-width: 100%; /* Garante que o carrossel não ultrapasse o contêiner pai */
+    margin: 0 auto; /* Centraliza o carrossel */
+}
+
+.carousel-inner {
+    height: 400px; /* Altura fixa para consistência */
+    overflow: hidden; /* Evita que as imagens "vazem" para fora do contêiner */
+}
+
+.carousel-inner img {
+    width: 100%; /* Garante que a imagem ocupe toda a largura */
+    height: 100%; /* Preenche a altura do contêiner */
+    object-fit: cover; /* Garante que as imagens preencham o espaço sem distorção */
+    object-position: center; /* Centraliza a imagem */
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    filter: invert(100%); /* Torna os ícones visíveis em fundos escuros */
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #ffffff; /* Fundo branco para os cards */
+    transition: transform 0.3s; /* Animação ao passar o mouse */
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Leve elevação ao passar o mouse */
+}
+
+.card-img-top {
+    height: 200px; /* Altura fixa para as imagens dos cards */
+    object-fit: cover; /* Ajusta a imagem ao espaço */
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-title {
+    color: #0069d9;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.card-text {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+/* Tabelas */
+.table {
+    background-color: #ffffff;
+    border-radius: 8px;
+}
+
+.table thead th {
+    border-bottom: 2px solid #e9ecef;
+    color: #6c757d;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+/* Botões */
+.btn-light {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    color: #0069d9;
+}
+
+.btn-light:hover {
+    background-color: #f8f9fa;
+    color: #0056b3;
+}
+
+.btn-primary {
+    background-color: #0069d9;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Formulário */
+.form-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    border-color: #0069d9;
+    box-shadow: 0 0 5px rgba(0, 105, 217, 0.3);
+}
+
+/* Modal */
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: #0069d9;
+    color: #ffffff;
+    border-bottom: none;
+}
+
+.modal-header .btn-close {
+    filter: invert(100%); /* Ícone de fechar branco */
+}
+
+.modal-title {
+    font-weight: 500;
+}
+
+/* Alerta de Sucesso */
+.alert-success {
+    border-radius: 8px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-success .btn-close {
+    filter: none; /* Mantém o ícone de fechar padrão */
+}
+
+/* Alerta de Erro */
+.alert-danger {
+    border-radius: 8px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-danger .btn-close {
+    filter: none; /* Mantém o ícone de fechar padrão */
+}
+
+/* Footer */
+.footer {
+    background-color: #0069d9; /* Fundo escuro conforme o HTML */
+    color: white; /* Texto branco */
+    font-size: 0.9rem;
+    padding: 2rem 0; /* Espaçamento interno maior */
+}
+
+.footer h5 {
+    color: #0069d9; /* Títulos em azul */
+    font-weight: 500;
+}
+
+.footer a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer a:hover {
+    color: white;
+}
+
+.footer .list-unstyled li {
+    margin-bottom: 0.5rem;
+}
+
+.footer hr {
+    border-color: #ffffff; /* Linha divisória mais visível */
+}
+
+.footer .text-center {
+    font-size: 0.85rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .carousel-inner {
+        height: 300px; /* Reduz a altura em telas menores */
+    }
+    .card {
+        margin-bottom: 1rem; /* Espaço entre cards empilhados */
+    }
+}
+
+.highlight-text {
+    font-weight: 900; /* Letra mais grossa */
+    color: white; /* Amarelo ouro brilhante */
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7); /* Sombra mais pronunciada */
+}
+
+.subtle-text {
+    color: #b0c4de; /* Cinza-azulado claro */
+}
+
+.hover-effect {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.hover-effect:hover {
+    transform: scale(1.2);
+    opacity: 0.8;
+}

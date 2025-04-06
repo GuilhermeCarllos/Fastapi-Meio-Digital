@@ -1,0 +1,7 @@
+FROM postgres:17
+
+# Expõe a porta 5432
+EXPOSE 5432
+
+# O CMD padrão da imagem postgres já é suficiente
+CMD ["postgres"]

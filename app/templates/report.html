@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Relatórios - Sistema Meio Digital{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="modal-title mb-0">Relatórios</h2>
+        </div>
+        <div class="card-body">
+            <h3 class="card-title">Professores</h3>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome do Professor</th>
+                        <th>E-mail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for professor in professores %}
+                    <tr>
+                        <td>{{ professor.id }}</td>
+                        <td>{{ professor.name }}</td>
+                        <td>{{ professor.email }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-muted">Nenhum professor cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h3 class="card-title">Cursos</h3>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome do Curso</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for curso in cursos %}
+                    <tr>
+                        <td>{{ curso.id }}</td>
+                        <td>{{ curso.name }}</td>
+                        <td>{{ curso.description }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-muted">Nenhum curso cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h3 class="card-title">Matrículas</h3>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Estudante</th>
+                        <th>Curso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                    <tr>
+                        <td>{{ enrollment.id }}</td>
+                        <td>{{ enrollment.estudante.name }}</td>
+                        <td>{{ enrollment.curso.name }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-muted">Nenhuma matrícula cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<br>
+{% endblock %}
